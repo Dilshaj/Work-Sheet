@@ -1,0 +1,118 @@
+name: Fullstack CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # =========================
+      # CHECKOUT
+      # =========================
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # =========================
+      # DEBUG
+      # =========================
+      - name: Show Folder Structure
+        run: ls -R
+
+      # =========================
+      # FRONTEND BUILD
+      # =========================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Frontend Dependencies
+        working-directory: ./work-updates
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: ./work-updates
+        run: npm run build
+
+      # =========================
+      # BACKEND BUILD
+      # =========================
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libpq-dev \
+            gcc \
+            libcairo2-dev \
+            pkg-config \
+            python3-dev
+
+          python -m venv venv
+          source venv/bin/activate
+
+          pip install --upgrade pip
+          pip install wheel setuptools
+          pip install -r requirements.txt
+
+      # =========================
+      # DEPLOY TO EC2
+      # =========================
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.EC2_USER }}   # ✅ FIXED
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+
+          script: |
+            echo "🚀 Deployment Started"
+
+            # DEBUG (very useful)
+            pwd
+            whoami
+            ls -la /home/ubuntu
+
+            # GO TO PROJECT
+            cd /home/ubuntu/work-sheet
+
+            # PULL LATEST CODE
+            git pull origin main
+
+            # =========================
+            # FRONTEND
+            # =========================
+            cd work-updates
+            npm install
+            npm run build
+
+            pm2 delete frontend || true
+            pm2 start "npm run dev -- --host" --name frontend
+
+            # =========================
+            # BACKEND
+            # =========================
+            cd ../backend
+            python3 -m venv venv
+            source venv/bin/activate
+
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            pm2 delete backend || true
+            pm2 start "venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 5000" --name backend
+
+            # SAVE PM2
+            pm2 save
+
+            echo "✅ Deployment Completed Successfully"
