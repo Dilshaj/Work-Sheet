@@ -35,7 +35,7 @@ jobs:
             # BACKEND SETUP
             # =========================
             cd backend
-            echo "📦 Setting up Backend..."
+            echo "Setting up Backend..."
             python3 -m venv venv || true
             source venv/bin/activate
             pip install -r requirements.txt
