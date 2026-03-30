@@ -53,8 +53,8 @@ jobs:
             EOL
 
             # Restart backend
-            pm2 restart backend || pm2 start "uvicorn app.main:app --host 0.0.0.0 --port 5000" --name backend
-
+            pm2 restart backend || pm2 start /home/ubuntu/app/backend/venv/bin/uvicorn \
+            "app.main:app --host 0.0.0.0 --port 5000" \ --name backend
             # =========================
             # FRONTEND SETUP
             # =========================
