@@ -31,9 +31,10 @@ fi
 # 4. Restart Application Services
 echo "Reloading backend services..."
 sudo systemctl daemon-reload
-sudo systemctl restart backend
+# Restart backend using systemd or pm2 (matches the workflow)
+sudo systemctl restart backend || pm2 restart backend
 
 echo "=========================================="
 echo "Deployment Complete! ✅"
-echo "Your live site at 16.112.203.49 is fully updated and stabilized."
+echo "Your live site is fully updated and stabilized."
 echo "=========================================="

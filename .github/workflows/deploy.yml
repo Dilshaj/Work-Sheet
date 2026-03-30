@@ -52,19 +52,27 @@ jobs:
             ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
             EOL
 
-            # Restart backend
+            # Restart backend using PM2
             pm2 restart backend || pm2 start /home/ubuntu/app/backend/venv/bin/uvicorn \
             "app.main:app --host 0.0.0.0 --port 5000" \ --name backend
+            
             # =========================
             # FRONTEND SETUP
             # =========================
             cd ../work-updates
 
+            # Clean install and build with Vite
             npm install
+            rm -rf dist
             npm run build
 
-            pm2 restart frontend || pm2 serve dist 3000 --name frontend
+            # Synchronize Nginx Configuration (Nginx serves directly from dist)
+            cd ..
+            if [ -f "deployment/nginx.conf" ]; then
+                sudo cp deployment/nginx.conf /etc/nginx/sites-available/default
+                sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+                sudo systemctl restart nginx
+            fi
 
             pm2 save
-
             echo "✅ Deployment Completed"
