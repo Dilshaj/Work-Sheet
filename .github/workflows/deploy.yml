@@ -24,32 +24,20 @@ jobs:
             set -e
             echo "🚀 Deployment Started"
 
-            whoami
-            pwd
-            ls -la
-
             cd /home/sooraj/Work-Sheet-1
 
-            echo "📂 After cd:"
-            pwd
-            ls
-
-            echo "🔗 Git remote:"
-            git remote -v
-
-            echo "⬇️ Pulling code..."
             git pull origin main
 
-            echo "📦 Backend setup"
+            # ================= BACKEND =================
             cd backend
 
             python3 -m venv venv || true
-            source venv/bin/activate
-            pip install -r requirements.txt
+            venv/bin/pip install -r requirements.txt
 
-            pm2 restart backend || pm2 start /home/sooraj/Work-Sheet-1/backend/venv/bin/uvicorn --name backend --interpreter none -- app.main:app --host 0.0.0.0 --port 5000
+            pm2 restart backend || pm2 start /home/sooraj/Work-Sheet-1/backend/venv/bin/uvicorn \
+            --name backend --interpreter none -- app.main:app --host 0.0.0.0 --port 5000
 
-            echo "🌐 Frontend setup"
+            # ================= FRONTEND =================
             cd ../work-updates
 
             npm install
