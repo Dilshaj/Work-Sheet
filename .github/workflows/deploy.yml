@@ -10,109 +10,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # =========================
-      # CHECKOUT
-      # =========================
+      # Checkout
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # =========================
-      # DEBUG
-      # =========================
-      - name: Show Folder Structure
-        run: ls -R
-
-      # =========================
-      # FRONTEND BUILD
-      # =========================
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install Frontend Dependencies
-        working-directory: ./work-updates
-        run: npm install
-
-      - name: Build Frontend
-        working-directory: ./work-updates
-        run: npm run build
-
-      # =========================
-      # BACKEND BUILD
-      # =========================
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libpq-dev \
-            gcc \
-            libcairo2-dev \
-            pkg-config \
-            python3-dev
-
-          python -m venv venv
-          source venv/bin/activate
-
-          pip install --upgrade pip
-          pip install wheel setuptools
-          pip install -r requirements.txt
-
-      # =========================
-      # DEPLOY TO EC2
-      # =========================
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
+      # SSH Deploy
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.EC2_USER }}   # ✅ FIXED
+          username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 22
 
           script: |
             echo "🚀 Deployment Started"
 
-            # DEBUG (very useful)
-            pwd
-            whoami
-            ls -la /home/ubuntu
+            cd /home/ubuntu/app
 
-            # GO TO PROJECT
-            cd /home/ubuntu/work-sheet
-
-            # PULL LATEST CODE
+            # Pull latest code
             git pull origin main
 
             # =========================
-            # FRONTEND
+            # BACKEND SETUP
             # =========================
-            cd work-updates
-            npm install
-            npm run build
+            cd backend
 
-            pm2 delete frontend || true
-            pm2 start "npm run dev -- --host" --name frontend
-
-            # =========================
-            # BACKEND
-            # =========================
-            cd ../backend
             python3 -m venv venv
             source venv/bin/activate
 
-            pip install --upgrade pip
             pip install -r requirements.txt
 
-            pm2 delete backend || true
-            pm2 start "venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 5000" --name backend
+            # Create .env file
+            cat > .env <<EOL
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            ALGORITHM=${{ secrets.ALGORITHM }}
+            ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+            EOL
 
-            # SAVE PM2
+            # Restart backend
+            pm2 restart backend || pm2 start "uvicorn app.main:app --host 0.0.0.0 --port 5000" --name backend
+
+            # =========================
+            # FRONTEND SETUP
+            # =========================
+            cd ../work-updates
+
+            npm install
+            npm run build
+
+            pm2 restart frontend || pm2 serve dist 3000 --name frontend
+
             pm2 save
 
-            echo "✅ Deployment Completed Successfully"
+            echo "✅ Deployment Completed"
