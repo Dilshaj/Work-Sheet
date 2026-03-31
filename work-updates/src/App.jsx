@@ -180,3 +180,17 @@ function App() {
 }
 
 export default App;
+
+import { useEffect } from "react";
+import { getHome } from "./api/api";
+
+function App() {
+
+  useEffect(() => {
+    getHome().then(data => console.log(data));
+  }, []);
+
+  return <h1>My App</h1>;
+}
+
+export default App;
