@@ -180,23 +180,3 @@ function App() {
 }
 
 export default App;
-
-import { useEffect, useState } from "react";
-import { getData } from "./api/api";
-
-function App() {
-  const [data, setData] = useState("");
-
-  useEffect(() => {
-    getData().then(res => setData(res.msg));
-  }, []);
-
-  return (
-    <div>
-      <h1>Frontend Connected 🚀</h1>
-      <p>{data}</p>
-    </div>
-  );
-}
-
-export default App;
