@@ -14,8 +14,14 @@ export const TaskProvider = ({ children }) => {
         const fetchAll = () => {
             setLoading(true);
             Promise.all([getTasks(), getEmployees(selectedProjectId)]).then(([tasksData, empData]) => {
+                const bustedEmployees = empData.map(emp => ({
+                    ...emp,
+                    avatar: emp.avatar && !emp.avatar.includes('ui-avatars.com')
+                        ? `${emp.avatar.split('?')[0]}?t=${Date.now()}`
+                        : emp.avatar
+                }));
                 setTasks(tasksData);
-                setEmployees(empData);
+                setEmployees(bustedEmployees);
                 setLoading(false);
             });
         };
@@ -47,7 +53,13 @@ export const TaskProvider = ({ children }) => {
 
     const fetchEmployees = async () => {
         const fresh = await getEmployees(selectedProjectId);
-        setEmployees(fresh);
+        const bustedEmployees = fresh.map(emp => ({
+            ...emp,
+            avatar: emp.avatar && !emp.avatar.includes('ui-avatars.com')
+                ? `${emp.avatar.split('?')[0]}?t=${Date.now()}`
+                : emp.avatar
+        }));
+        setEmployees(bustedEmployees);
     };
 
     const addNewEmployee = async (employeeData) => {

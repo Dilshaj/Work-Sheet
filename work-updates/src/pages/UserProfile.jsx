@@ -7,7 +7,7 @@ import { updateProfile } from '../services/profileService';
 
 const UserProfile = () => {
     const { user, updateUser } = useAuth();
-    const { employees } = useTasks();
+    const { employees, refreshEmployees } = useTasks();
     const fileInputRef = useRef(null);
 
     // Support logic for users mapping to employees info mock data
@@ -97,9 +97,19 @@ const UserProfile = () => {
             }
 
             const response = await updateProfile(formData);
-            updateUser(response.user);
+
+            // Append timestamp to avatar URL to bypass browser cache
+            const updatedUser = { ...response.user };
+            if (updatedUser.avatar && !updatedUser.avatar.includes('ui-avatars.com')) {
+                updatedUser.avatar = `${updatedUser.avatar}?t=${Date.now()}`;
+            }
+
+            updateUser(updatedUser);
+            await refreshEmployees(); // Update admin state with latest API response
+
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
             setIsEditMode(false);
+            setPreviewImage(updatedUser.avatar);
         } catch (error) {
             setMessage({ type: 'error', text: error.message });
         } finally {

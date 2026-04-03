@@ -60,8 +60,12 @@ async def update_profile(
         # Update user avatar with relative path that works with frontend proxy
         user.avatar = f"/{file_path}"
 
-    db.commit()
-    db.refresh(user)
+    try:
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database update failed: {str(e)}")
     
     return {
         "message": "Profile updated successfully",
