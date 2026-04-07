@@ -12,16 +12,25 @@ cloudinary.config(
 
 def upload_image(file, folder="eduprova"):
     """
-    Uploads a file to Cloudinary and returns the secure URL.
-    :param file: The file-like object or path
-    :param folder: Cloudinary folder name
-    :return: Secure URL of the uploaded image
+    Safely uploads a file-like object to Cloudinary by first saving to a temp file.
+    This prevents stream-closure issues in certain cloud deployments.
     """
+    import tempfile
+    import os
     try:
-        response = cloudinary.uploader.upload(file, folder=folder)
-        return response.get("secure_url")
+        # Create a temp file to ensure the data is fully read/available
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(file.read())
+            tmp_path = tmp.name
+        
+        try:
+            response = cloudinary.uploader.upload(tmp_path, folder=folder)
+            return response.get("secure_url")
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
     except Exception as e:
-        print(f"Cloudinary Upload Error: {e}")
+        print(f"Cloudinary Robust Upload Error: {e}")
         return None
 
 def upload_base64_image(base64_str, folder="projects"):
