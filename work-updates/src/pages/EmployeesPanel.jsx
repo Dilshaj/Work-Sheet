@@ -75,7 +75,6 @@ const EmployeesPanel = () => {
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-20">
                     <div className="h-10 w-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-                    <p className="mt-4 text-slate-500 dark:text-slate-400 font-medium">Loading organization charts...</p>
                 </div>
             ) : filteredEmployees.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">

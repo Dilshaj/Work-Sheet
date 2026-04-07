@@ -12,18 +12,30 @@ export const TaskProvider = ({ children }) => {
 
     const fetchAll = useCallback((silent = false) => {
         if (!silent) setLoading(true);
-        Promise.all([getTasks(), getEmployees(selectedProjectId)]).then(([tasksData, empData]) => {
-            const normalized = empData.map(emp => {
-                let avatar = emp.avatar;
-                if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
-                    avatar = `${window.location.host.includes('localhost') ? 'http://localhost:5000' : ''}${avatar}`;
-                }
-                return { ...emp, avatar };
-            });
-            setTasks(tasksData);
-            setEmployees(normalized);
+
+        const safetyTimeout = setTimeout(() => {
             setLoading(false);
-        });
+        }, 5000); // Stop loading after 5 seconds no matter what
+
+        Promise.all([getTasks(), getEmployees(selectedProjectId)])
+            .then(([tasksData, empData]) => {
+                const normalized = empData.map(emp => {
+                    let avatar = emp.avatar;
+                    if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
+                        avatar = `${window.location.host.includes('localhost') ? 'http://localhost:5000' : ''}${avatar}`;
+                    }
+                    return { ...emp, avatar };
+                });
+                setTasks(tasksData);
+                setEmployees(normalized);
+            })
+            .catch(() => {
+                console.warn("Failed to fetch initial tasks/employees.");
+            })
+            .finally(() => {
+                clearTimeout(safetyTimeout);
+                setLoading(false);
+            });
     }, [selectedProjectId]);
 
     useEffect(() => {
