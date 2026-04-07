@@ -40,8 +40,10 @@ jobs:
           npm run build
 
           echo "🌐 Deploy to nginx"
-          sudo rm -rf /var/www/html/*
-          sudo cp -r dist/* /var/www/html/
+          sudo mkdir -p /var/www/work-updates
+          sudo rm -rf /var/www/work-updates/dist
+          sudo cp -r dist /var/www/work-updates/
+          sudo chown -R www-data:www-data /var/www/work-updates/dist
 
           sudo systemctl restart nginx
 

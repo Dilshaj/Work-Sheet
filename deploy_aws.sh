@@ -13,8 +13,11 @@ if [ -d "work-updates" ]; then
     echo "Building production assets with Vite..."
     cd work-updates
     npm install
-    # Ensure production environment variables are correctly picked up during build
     npm run build
+    sudo mkdir -p /var/www/work-updates
+    sudo rm -rf /var/www/work-updates/dist
+    sudo cp -r dist /var/www/work-updates/
+    sudo chown -R www-data:www-data /var/www/work-updates/dist
     cd ..
 fi
 
