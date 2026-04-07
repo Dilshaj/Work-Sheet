@@ -53,6 +53,7 @@ class EmployeeCreate(BaseModel):
     name: str
     role: str = "user"
     project_id: Optional[str] = None
+    avatar: Optional[str] = None
 
 class EmployeeProgressUpdate(BaseModel):
     dailyProgress: float
