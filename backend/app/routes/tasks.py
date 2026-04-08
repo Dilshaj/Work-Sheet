@@ -8,7 +8,7 @@ from app.services import task_service
 
 router = APIRouter(prefix="/tasks")
 
-@router.get("/", response_model=List[TaskResponse])
+@router.get("", response_model=List[TaskResponse])
 def get_all_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Retrieve all tasks. Can be used for admin dashboard overviews."""
     return task_service.get_tasks(db, skip=skip, limit=limit)
@@ -26,7 +26,7 @@ def get_employee_tasks(user_id: str, db: Session = Depends(get_db)):
     """Retrieve all tasks assigned to a specific employee ID."""
     return task_service.get_tasks_by_employee(db, employee_id=user_id)
 
-@router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     """Create a new task and map it to an employee and project."""
     # Note: Foreign key constraints in the database will automatically reject

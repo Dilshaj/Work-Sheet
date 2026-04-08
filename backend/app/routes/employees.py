@@ -27,10 +27,11 @@ def search_employee(employee_id: str = None, name: str = None, db: Session = Dep
     Used by the Add Employee modal for auto-fill functionality."""
     employee = employee_service.search_employee(db, employee_id=employee_id, name=name)
     if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
+        logger.error(f"Employee {employee_id} not found in DB!")
+        raise HTTPException(status_code=404, detail="Employee not found in V1.2.0-FIX")
     
     # 🕵️ Diagnostic Log: See what's actually in the database model
-    logger.info(f"SEARCH DEBUG: User {employee_id} found. Avatar in Model: {employee.avatar}")
+    logger.info(f"SEARCH DEBUG V1.2.0: User {employee_id} found. Avatar: {employee.avatar}")
     
     return employee
 

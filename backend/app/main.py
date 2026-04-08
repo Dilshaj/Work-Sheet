@@ -20,23 +20,20 @@ logger = logging.getLogger(__name__)
 # 🔥 FIXED LIFESPAN
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Initializing Database...")
-
     try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database schemas verified.")
-
-        from app.db.database import SessionLocal
+        from app.db.database import SessionLocal, engine, Base
         from app.models.models import User
         from app.utils.security import get_password_hash
 
+        # Initialize tables if they don't exist
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database schemas verified.")
+
         db = SessionLocal()
         try:
+            # Safely check for admin user
             admin_user = db.query(User).filter(User.role == "admin").first()
-
-            if admin_user:
-                logger.info("Admin user already exists. Skipping setup.")
-            else:
+            if not admin_user:
                 logger.info("Creating default admin user...")
                 new_admin = User(
                     name="Admin",
@@ -49,15 +46,14 @@ async def lifespan(app: FastAPI):
                 db.add(new_admin)
                 db.commit()
                 logger.info("Default admin user created.")
-
-        except Exception as e:
-            logger.error(f"Admin setup error: {e}")
-
+            else:
+                logger.info("Admin user already exists.")
+        except Exception as db_e:
+            logger.error(f"Startup Database Query Failed: {db_e}. (Is your .env DB configuration correct?)")
         finally:
             db.close()
-
-    except Exception as e:
-        logger.error(f"Error executing schema verification: {e}")
+    except Exception as startup_e:
+        logger.error(f"CRITICAL STARTUP ERROR: {startup_e}. The app will start but database features may be offline.")
 
     yield
     logger.info("Shutting down API Service...")
