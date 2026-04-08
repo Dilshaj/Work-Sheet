@@ -89,7 +89,10 @@ const PaySlipPanel = () => {
                         <p className="text-slate-500 dark:text-slate-400">Generate and manage employee pay slips globally.</p>
                     </div>
                     <button
-                        onClick={() => setShowForm(!showForm)}
+                        onClick={() => {
+                            console.log("Form Toggled!");
+                            setShowForm(!showForm);
+                        }}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg active:scale-95"
                     >
                         <Plus className="h-5 w-5" />
@@ -99,8 +102,11 @@ const PaySlipPanel = () => {
             </div>
 
             {showForm && (
-                <div className="mb-8 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-blue-100 dark:border-indigo-900 shadow-xl animate-fade-in-up">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">New Salary Distribution</h3>
+                <div className="mb-8 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-blue-200 dark:border-blue-900 shadow-inner animate-fade-in-up">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">🚀 New Salary Distribution Form</h3>
+                        <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold uppercase">Debug: Form Active</span>
+                    </div>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <input
                             name="employee_id"
