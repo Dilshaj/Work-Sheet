@@ -26,6 +26,10 @@ def search_employee(employee_id: str = None, name: str = None, db: Session = Dep
     employee = employee_service.search_employee(db, employee_id=employee_id, name=name)
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # 🕵️ Diagnostic Log: See what's actually in the database model
+    logger.info(f"SEARCH DEBUG: User {employee_id} found. Avatar in Model: {employee.avatar}")
+    
     return employee
 
 @router.get("/{id}", response_model=EmployeeResponse)

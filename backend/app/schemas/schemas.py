@@ -20,7 +20,7 @@ class UserResponse(BaseModel):
     name: str
     email: Optional[str] = None
     role: str
-    avatar: Optional[str] = None
+    avatar: Optional[str] = Field(None, validation_alias="avatar_url")
     projectId: Optional[str] = Field(None, validation_alias="project_id")
     
     class Config:
