@@ -15,20 +15,20 @@ def check_and_test():
         columns = [r[0] for r in res]
         logger.info(f"Available columns: {columns}")
         
-        # 2. Try identifying Sooraj
-        sooraj = db.query(User).filter(User.employee_id == '2026018').first()
-        if sooraj:
-            logger.info(f"Sooraj found. UUID: {sooraj.id}. Current Avatar: {sooraj.avatar}")
+        # 2. Try identifying Kiran
+        kiran = db.query(User).filter(User.employee_id == '2026005').first()
+        if kiran:
+            logger.info(f"Kiran found. UUID: {kiran.id}. Current Avatar: {kiran.avatar}")
             
             # 3. Try manual update
             test_url = "https://res.cloudinary.com/dv1sih7vk/image/upload/v1741346387/sample.jpg"
             logger.info(f"Attempting manual update to: {test_url}")
-            sooraj.avatar = test_url
+            kiran.avatar = test_url
             db.commit()
-            db.refresh(sooraj)
-            logger.info(f"Verification after commit: {sooraj.avatar}")
+            db.refresh(kiran)
+            logger.info(f"Verification after commit FOR KIRAN: {kiran.avatar}")
         else:
-            logger.warning("Sooraj (2026018) not found in DB.")
+            logger.warning("Kiran (2026005) not found in DB.")
             
     except Exception as e:
         logger.error(f"DB Test Error: {e}")

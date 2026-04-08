@@ -48,16 +48,25 @@ async def update_profile(
 
     # Upload image to Cloudinary and save URL to DB
     if profile_image and profile_image.filename:
-        cloudinary_url = upload_to_cloudinary(profile_image.file, folder="avatars")
-        if not cloudinary_url:
-            raise HTTPException(status_code=500, detail="Image upload to Cloudinary failed")
-        user.avatar = cloudinary_url
+        try:
+            cloudinary_url = upload_to_cloudinary(profile_image.file, folder="avatars")
+            if not cloudinary_url:
+                logger.error(f"Cloudinary upload returned None for user {user_id}")
+                raise HTTPException(status_code=500, detail="Cloudinary upload failed: No URL returned")
+            
+            logger.info(f"Successfully uploaded for user {user_id}: {cloudinary_url}")
+            user.avatar = cloudinary_url
+        except Exception as e:
+            logger.error(f"Cloudinary integration exception for user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Image upload error: {str(e)}")
 
     try:
         db.commit()
         db.refresh(user)
+        logger.info(f"Database commit successful for user {user_id}. Avatar URL: {user.avatar}")
     except Exception as e:
         db.rollback()
+        logger.error(f"Database update failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Database update failed: {str(e)}")
     
     # Return plain dict (properly serializable by FastAPI)
